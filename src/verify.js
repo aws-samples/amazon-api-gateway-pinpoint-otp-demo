@@ -12,11 +12,12 @@ exports.handler = async(event) => {
   let params = {
     ApplicationId: process.env.PINPOINT_APPLICATION_ID,
     VerifyOTPMessageRequestParameters: {
-      DestinationIdentity: event.headers.phone,
-      Otp: event.headers.otp,
-      ReferenceId: crypto.createHash('md5').update(reference).digest('hex')
+      DestinationIdentity: event.headers.phone,                               // Phone number that received the OTP
+      Otp: event.headers.otp,                                                 // OTP entered by user
+      ReferenceId: crypto.createHash('md5').update(reference).digest('hex')   // Unique identifier. Should be same as used while sending OTP
     }
   };
+  // Verify the OTP
   let response = await pinpoint.verifyOTPMessage(params).promise();
   if (response.VerificationResponse.Valid != true) {
     return {
@@ -24,6 +25,7 @@ exports.handler = async(event) => {
       "message": "Invalid otp"
     }
   }
+  // Create a session, and store it in DynamoDB table
   params = {
     TableName: process.env.TABLE_NAME,
     Item: {
@@ -34,13 +36,12 @@ exports.handler = async(event) => {
       ExpiresAt: Math.floor(Date.now() / 1000) + 604800
     }
   };
-
   response = await dynamo.put(params).promise();
   if (response != null) {
     return {
       'status': 201,
       'message': 'Access key created',
-      'key': params.Item.SessionID
+      'key': params.Item.SessionID        // For demo, Session ID is used as the API key
     }
   }
 

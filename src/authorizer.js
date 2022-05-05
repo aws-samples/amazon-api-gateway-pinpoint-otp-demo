@@ -5,7 +5,7 @@ const AWS = require("aws-sdk");
 const client = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async(event) => {
-
+  // If an authorization header is not passed, the request is not authorized.
   if (!event.headers.hasOwnProperty('authorization')) {
     return {
       isAuthorized: false
@@ -18,6 +18,7 @@ exports.handler = async(event) => {
       "SessionID": event.headers.authorization
     }
   }).promise();
+  // If a valid SessionID is present, the request is authorized.
   if (response.hasOwnProperty('Item')) {
     return {
       isAuthorized: true

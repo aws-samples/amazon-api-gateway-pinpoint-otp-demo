@@ -9,9 +9,13 @@
   "keywords": [
     "Amazon Pinpoint",
     "Amazon API Gateway",
+    "AWS Lambda",
+    "Amazon DynamoDB",
     "HTTP API",
     "SMS",
-    "OTP"
+    "One Time Password",
+    "OTP",
+    "OTP Verification"
   ],
   "author": "Rajdeep Tarat",
   "license": "MIT-0",
