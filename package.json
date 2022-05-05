@@ -1,0 +1,21 @@
+{
+  "name": "api-gateway-pinpoint-otp",
+  "version": "0.1.0",
+  "description": "Authenticate API Gateway requests with Pinpoint OTP",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Amazon Pinpoint",
+    "Amazon API Gateway",
+    "HTTP API",
+    "SMS",
+    "OTP"
+  ],
+  "author": "Rajdeep Tarat",
+  "license": "MIT-0",
+  "dependencies": {
+    "aws-sdk": "^2.1064.0"
+  }
+}

@@ -1,0 +1,147 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Authenticate API Gateway requests with Pinpoint OTP
+Resources:
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: demo
+      Auth:
+        Authorizers:
+          LambdaAuthorizer:
+            FunctionArn: !GetAtt LambdaAuthorizer.Arn
+            FunctionInvokeRole: !GetAtt LambdaAuthorizerRole.Arn
+            Identity:
+              Headers:
+                - Authorization
+            AuthorizerPayloadFormatVersion: 2.0
+            EnableSimpleResponses: true
+  LambdaAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: authorizer.handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref SessionsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionsTable
+  LambdaAuthorizerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: LambdaAuthorizerPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: '*'
+  GetItem:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: get.handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref SessionsTable
+      Events:
+        GetRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /
+            Method: get
+            PayloadFormatVersion: "2.0"
+  Login:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: login.handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          BRAND_NAME: "ExampleCorp"
+          PINPOINT_APPLICATION_ID: "MyPinpointApplicationID"
+      Policies:
+        - Statement:
+          - Sid: GenerateOTPPolicy
+            Effect: Allow
+            Action:
+              - mobiletargeting:SendOTPMessage
+            Resource: '*'
+      Events:
+        GetRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /login
+            Method: post
+            Auth:
+              Authorizer: NONE
+  Verify:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: verify.handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref SessionsTable
+          BRAND_NAME: "ExampleCorp"
+          PINPOINT_APPLICATION_ID: "MyPinpointApplicationID"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionsTable
+        - Statement:
+          - Sid: VerifyOTPPolicy
+            Effect: Allow
+            Action:
+              - mobiletargeting:VerifyOTPMessage
+            Resource: '*'
+      Events:
+        GetRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /verify
+            Method: post
+            Auth:
+              Authorizer: NONE
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      KeySchema:
+        -
+          AttributeName: "SessionID"
+          KeyType: "HASH"
+      AttributeDefinitions:
+        -
+          AttributeName: "SessionID"
+          AttributeType: "S"
+      TimeToLiveSpecification:
+        AttributeName: ExpiresAt
+        Enabled: true
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+Outputs:
+  HttpApiEndpoint:
+    Description: "HTTP API endpoint"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
