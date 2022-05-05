@@ -1,15 +1,22 @@
 ## Amazon API Gateway Pinpoint OTP Demo
+This application demonstrates how you can leverage Amazon Pinpoint's One Time Password (OTP) feature, to authenticate Amazon API Gateway requests. It uses a Lambda Authorizer to authenticate incoming requests, and calls the `SendOTPMessage` and `VerifyOTPMessage` APIs in Amazon Pinpoint to validate OTPs and exchange the verification for an API key.
+
+![Architecture Diagram](img/APIGatewaySMSAuth.png)
+
+**NOTE:** This application is a demo, intended to help you validate ideas and perform a proof-of-concept. It is _not_ meant for production deployments as is.
 
 ## Requirements
 
-- This package requires AWS Serverless Application Model (AWS SAM) Command Line Interface (CLI) to deploy to your account. Instructions for installing and setting up SAM CLI can be found here: https://aws.amazon.com/serverless/sam/
-- This application requires an Amazon Pinpoint project to send SMS OTP messages. Follow the instructions to configure your project.
-- Replace the `BRAND_NAME`, and `PINPOINT_APPLICATION_ID` in your template files before deployment.
+- AWS Serverless Application Model (AWS SAM) Command Line Interface (CLI) to deploy to your account. Instructions for installing and setting up SAM CLI can be found [here](https://aws.amazon.com/serverless/sam/).
+- Amazon Pinpoint project to send SMS OTP messages. Follow the [instructions](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-sms-setup.html) to configure your project.
+- Replace the `PINPOINT_APPLICATION_ID` variables in the [template](template.yaml) file before deployment. This identifier is displayed as the Project ID on the Amazon Pinpoint console.
+- Optionally, replace the `BRAND_NAME` variable with a name of your choosing.
 
 ## Deployment
 
 - Once the above requirements are met, deploy the application using `sam deploy --guided`
-- Optionally you can browse to the AWS Cloudformation console to view the resources in more detail
+- Optionally you can browse to the AWS CloudFormation console to view the resources in more detail
+- Note down the Amazon API Gateway endpoint - it will be used to invoke the APIs in the next step.
 
 ## Demo
 
