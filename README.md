@@ -29,7 +29,7 @@ This application demonstrates how you can leverage Amazon Pinpoint's One Time Pa
 ## Cleanup
 
 - Use `sam delete` to delete the application from your AWS account, and avoid incurring additional charges.
-- Note: The above command does not delete any components that create manually.
+- Note: The above command does not delete any components that you create manually.
 
 ## Security
 
