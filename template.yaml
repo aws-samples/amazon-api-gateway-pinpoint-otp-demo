@@ -12,14 +12,15 @@ Resources:
       StageName: demo
       Auth:
         Authorizers:
-          LambdaAuthorizer:
+          CustomAuthorizer:
             FunctionArn: !GetAtt LambdaAuthorizer.Arn
-            FunctionInvokeRole: !GetAtt LambdaAuthorizerRole.Arn
+            FunctionInvokeRole: !GetAtt LambdaCustomAuthorizerRole.Arn
             Identity:
               Headers:
                 - Authorization
             AuthorizerPayloadFormatVersion: 2.0
             EnableSimpleResponses: true
+        DefaultAuthorizer: CustomAuthorizer
   LambdaAuthorizer:
     Type: AWS::Serverless::Function
     Properties:
@@ -32,7 +33,7 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionsTable
-  LambdaAuthorizerRole:
+  LambdaCustomAuthorizerRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -78,7 +79,7 @@ Resources:
       Environment:
         Variables:
           BRAND_NAME: "ExampleCorp"
-          PINPOINT_APPLICATION_ID: "MyPinpointApplicationID"
+          PINPOINT_APPLICATION_ID: "PINPOINT_APPLICATION_ID"
       Policies:
         - Statement:
           - Sid: GenerateOTPPolicy
@@ -87,7 +88,7 @@ Resources:
               - mobiletargeting:SendOTPMessage
             Resource: '*'
       Events:
-        GetRoot:
+        PostLogin:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
@@ -105,7 +106,7 @@ Resources:
         Variables:
           TABLE_NAME: !Ref SessionsTable
           BRAND_NAME: "ExampleCorp"
-          PINPOINT_APPLICATION_ID: "MyPinpointApplicationID"
+          PINPOINT_APPLICATION_ID: "PINPOINT_APPLICATION_ID"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionsTable
@@ -116,7 +117,7 @@ Resources:
               - mobiletargeting:VerifyOTPMessage
             Resource: '*'
       Events:
-        GetRoot:
+        PostVerify:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
@@ -144,4 +145,4 @@ Resources:
 Outputs:
   HttpApiEndpoint:
     Description: "HTTP API endpoint"
-    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/demo/"
