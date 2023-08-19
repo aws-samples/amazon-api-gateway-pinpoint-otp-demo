@@ -140,8 +140,8 @@ Resources:
         AttributeName: ExpiresAt
         Enabled: true
       ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
 Outputs:
   HttpApiEndpoint:
     Description: "HTTP API endpoint"
